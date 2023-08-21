@@ -1,4 +1,5 @@
 # from collections import namedtuple
+import json
 from typing import Optional
 from pydantic import BaseModel
 from prefect import flow, task, get_run_logger
@@ -44,7 +45,7 @@ class VideoDownloadResult(BaseModel):
 def download_video_flow(video_url: str) -> VideoDownloadResult:
     return download_video(video_url)
 
-@task(cache_key_fn=task_input_hash)
+@task  #(cache_key_fn=task_input_hash)
 def download_video(video_url: str) -> VideoDownloadResult:
     logger = get_run_logger()
     video_type = select_video_type(video_url)
@@ -61,9 +62,12 @@ def select_video_type(video_url: str) -> str:
         return 'unknown'
     
 def download_youtube_video(youtube_url) -> VideoDownloadResult:
+    logger = get_run_logger()
     ydl_opts = {
+        # 'logger': logger, # I want to use the prefect logger but when I try to, logging isn't working :-(
         # 'outtmpl': output_filename,
-        'writeinfojson': True,
+        # 'writeinfojson': True, # This doesn't work so I write the file manually below
+        'paths': {'home': './video_downloads'},
         'format': 'worstvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
         'retries': 3,
         # 'merge_output_format': 'mp4',
@@ -80,7 +84,6 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
         # 'progress_hooks': [lambda d: print(d['status'])]
     }
 
-    logger = get_run_logger()
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
             video_info = ydl.extract_info(youtube_url, download=True)
@@ -120,6 +123,11 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
                 language=video_info['language'], 
                 filesize_approx=video_info['filesize_approx'], 
                 audio_channels=video_info['audio_channels'])
+            # Write the result to a json file
+            json.dump(result.dict(), open(metadata_file, 'w'))
+            # with open(metadata_file, 'w') as f:
+            #     json.dump(video_info, f)
+
             return result
         except youtube_dl.utils.DownloadError as e:
             logger.error("The video could not be downloaded")
@@ -128,4 +136,4 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
 if __name__ == '__main__':
     video_url = 'https://www.youtube.com/watch?v=P4urfQ1BdGI'
     result = download_video_flow(video_url)
-    print(result)
+    # print(result)

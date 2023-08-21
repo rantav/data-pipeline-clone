@@ -1,4 +1,3 @@
-# from collections import namedtuple
 import json
 from typing import Optional
 from pydantic import BaseModel
@@ -45,7 +44,7 @@ class VideoDownloadResult(BaseModel):
 def download_video_flow(video_url: str) -> VideoDownloadResult:
     return download_video(video_url)
 
-@task  #(cache_key_fn=task_input_hash)
+@task(cache_key_fn=task_input_hash)
 def download_video(video_url: str) -> VideoDownloadResult:
     logger = get_run_logger()
     video_type = select_video_type(video_url)
@@ -86,7 +85,7 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
-            video_info = ydl.extract_info(youtube_url, download=True)
+            video_info = ydl.extract_info(youtube_url, download=False)
             logger.info(f"Download success for {youtube_url} (Title: {video_info['title']})")
             video_file = ydl.prepare_filename(video_info) # youtube-dl automatically adds the correct extension
             metadata_file = video_file.replace('.mp4', '.info.json')

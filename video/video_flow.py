@@ -4,7 +4,7 @@ from prefect import flow, task, get_run_logger
 from prefect.tasks import task_input_hash
 
 from video_downloader import download_video
-
+from video_storage import store_video
 
 # @flow
 # def get_open_issues(repo_name: str, open_issues_count: int, per_page: int = 100):
@@ -19,11 +19,6 @@ from video_downloader import download_video
 #         )
 #     return [i for p in issues for i in p.result()]
 
-@task(cache_key_fn=task_input_hash)
-def store_video(video_file_path: str) -> str:
-    logger = get_run_logger()
-    logger.info(f'Storing video {video_file_path}...')
-    return 's3://bucket/video.mp4'
     
 @task(cache_key_fn=task_input_hash)
 def transcribe_video(video_file_path: str) -> str:
@@ -41,8 +36,8 @@ def process_video(video_url: str = "youtube.com/watch/123456"):
     logger = get_run_logger()
     logger.info(f'Processing video {video_url}...')
     downloaded_video = download_video(video_url)
-    s3_video_file_path = store_video(downloaded_video)
-    transcription = transcribe_video(downloaded_video)
+    s3_video_file_path = store_video(downloaded_video.video_file, downloaded_video.metadata_file)
+    transcription = transcribe_video(downloaded_video.video_file)
     index_video_transcription(video_url=video_url, s3_video_file_path=s3_video_file_path, transcription=transcription)
 
 

@@ -159,6 +159,44 @@ tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pytest (>=4.3.0)", "pytest-mypy-plugins", "pytest-xdist[psutil]"]
 
 [[package]]
+name = "boto3"
+version = "1.28.31"
+description = "The AWS SDK for Python"
+optional = false
+python-versions = ">= 3.7"
+files = [
+    {file = "boto3-1.28.31-py3-none-any.whl", hash = "sha256:2761f3249fe25c3ec1a8cd6b95fca2317747503e6f1d127daf6a3d2cdeb25680"},
+    {file = "boto3-1.28.31.tar.gz", hash = "sha256:dc6d72470f6d8926b8cdc10ee7708d7ccdd36d6313c7aa298bc1cf6bedb8921e"},
+]
+
+[package.dependencies]
+botocore = ">=1.31.31,<1.32.0"
+jmespath = ">=0.7.1,<2.0.0"
+s3transfer = ">=0.6.0,<0.7.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
+
+[[package]]
+name = "botocore"
+version = "1.31.31"
+description = "Low-level, data-driven core of boto 3."
+optional = false
+python-versions = ">= 3.7"
+files = [
+    {file = "botocore-1.31.31-py3-none-any.whl", hash = "sha256:1eef14ae98e8662e43f7cf6d993c732793def02644e2d489c5171d3b9269e900"},
+    {file = "botocore-1.31.31.tar.gz", hash = "sha256:950a49c5286fe1f6d72cfbe2910b9ddbdfbb907975ddc41cf38ac9709b4d1291"},
+]
+
+[package.dependencies]
+jmespath = ">=0.7.1,<2.0.0"
+python-dateutil = ">=2.1,<3.0.0"
+urllib3 = ">=1.25.4,<1.27"
+
+[package.extras]
+crt = ["awscrt (==0.16.26)"]
+
+[[package]]
 name = "brotli"
 version = "1.0.9"
 description = "Python bindings for the Brotli compression library"
@@ -925,6 +963,17 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "jmespath"
+version = "1.0.1"
+description = "JSON Matching Expressions"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "jmespath-1.0.1-py3-none-any.whl", hash = "sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980"},
+    {file = "jmespath-1.0.1.tar.gz", hash = "sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe"},
+]
+
+[[package]]
 name = "jsonpatch"
 version = "1.33"
 description = "Apply JSON-Patches (RFC 6902)"
@@ -1150,6 +1199,28 @@ files = [
 ]
 
 [[package]]
+name = "mypy-boto3-s3"
+version = "1.28.27"
+description = "Type annotations for boto3.S3 1.28.27 service generated with mypy-boto3-builder 7.17.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-s3-1.28.27.tar.gz", hash = "sha256:f1094344f68d1ffe2b998404e2e4ff9aa4239438692187fa83ad7b734739991c"},
+    {file = "mypy_boto3_s3-1.28.27-py3-none-any.whl", hash = "sha256:f4fdefbfe084c92a6b3d000689e61ab12a985a72b07c5ff157f8a66bcbdb83ba"},
+]
+
+[[package]]
+name = "mypy-boto3-secretsmanager"
+version = "1.28.24"
+description = "Type annotations for boto3.SecretsManager 1.28.24 service generated with mypy-boto3-builder 7.17.2"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-secretsmanager-1.28.24.tar.gz", hash = "sha256:13461d8d2891ec0e430437dbb71c0879ee431ddfedb6b21c265878642faeb2a7"},
+    {file = "mypy_boto3_secretsmanager-1.28.24-py3-none-any.whl", hash = "sha256:e224809e28d99c1360bfe6428e8b567bb4a43c38a71263eba0ff4de7fa321142"},
+]
+
+[[package]]
 name = "oauthlib"
 version = "3.2.2"
 description = "A generic, spec-compliant, thorough implementation of the OAuth request-signing logic"
@@ -1344,6 +1415,27 @@ websockets = ">=10.4"
 
 [package.extras]
 dev = ["cairosvg", "flaky", "ipython", "ipython (==8.12.*)", "jinja2", "mike", "mkdocs", "mkdocs-gen-files", "mkdocs-material", "mkdocstrings-python", "mock", "moto", "mypy", "numpy", "pillow", "pre-commit", "pytest (>7)", "pytest-asyncio (>=0.18.2)", "pytest-benchmark", "pytest-cov", "pytest-env", "pytest-flakefinder", "pytest-timeout", "pytest-xdist", "pytkdocs (>=0.14.2)", "pyyaml", "requests", "respx", "ruff", "setuptools (!=60.9.0)", "virtualenv", "watchfiles"]
+
+[[package]]
+name = "prefect-aws"
+version = "0.3.6"
+description = "Prefect collection of tasks and subflows to integrate with AWS"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "prefect-aws-0.3.6.tar.gz", hash = "sha256:5d1cd8dd92163bdf6b136a56ceb0c6c96fed46471d60b1aceab5e1675f18e508"},
+    {file = "prefect_aws-0.3.6-py3-none-any.whl", hash = "sha256:52d23f0269a27c34c9bf77789e543a948d0046cbe236fca5d54beedb9788a791"},
+]
+
+[package.dependencies]
+boto3 = ">=1.24.53"
+botocore = ">=1.27.53"
+mypy-boto3-s3 = ">=1.24.94"
+mypy-boto3-secretsmanager = ">=1.26.49"
+prefect = ">=2.10.11"
+
+[package.extras]
+dev = ["black", "boto3-stubs (>=1.24.39)", "coverage", "flake8", "interrogate", "isort", "mkdocs", "mkdocs-gen-files", "mkdocs-material", "mkdocstrings-python-legacy", "mock", "moto (>=3.1.16)", "mypy", "pillow", "pre-commit", "pytest", "pytest-asyncio", "pytest-lazy-fixture", "pytest-xdist", "types-boto3 (>=1.0.2)"]
 
 [[package]]
 name = "pyasn1"
@@ -1981,6 +2073,23 @@ files = [
 ]
 
 [[package]]
+name = "s3transfer"
+version = "0.6.2"
+description = "An Amazon S3 Transfer Manager"
+optional = false
+python-versions = ">= 3.7"
+files = [
+    {file = "s3transfer-0.6.2-py3-none-any.whl", hash = "sha256:b014be3a8a2aab98cfe1abc7229cc5a9a0cf05eb9c1f2b86b230fd8df3f78084"},
+    {file = "s3transfer-0.6.2.tar.gz", hash = "sha256:cab66d3380cca3e70939ef2255d01cd8aece6a4907a9528740f668c4b0611861"},
+]
+
+[package.dependencies]
+botocore = ">=1.12.36,<2.0a.0"
+
+[package.extras]
+crt = ["botocore[crt] (>=1.20.29,<2.0a.0)"]
+
+[[package]]
 name = "setuptools"
 version = "68.1.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
@@ -2197,20 +2306,19 @@ devenv = ["black", "check-manifest", "flake8", "pyroma", "pytest (>=4.3)", "pyte
 
 [[package]]
 name = "urllib3"
-version = "2.0.4"
+version = "1.26.16"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
 optional = false
-python-versions = ">=3.7"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*"
 files = [
-    {file = "urllib3-2.0.4-py3-none-any.whl", hash = "sha256:de7df1803967d2c2a98e4b11bb7d6bd9210474c46e8a0401514e3a42a75ebde4"},
-    {file = "urllib3-2.0.4.tar.gz", hash = "sha256:8d22f86aae8ef5e410d4f539fde9ce6b2113a001bb4d189e0aed70642d602b11"},
+    {file = "urllib3-1.26.16-py2.py3-none-any.whl", hash = "sha256:8d36afa7616d8ab714608411b4a3b13e58f463aee519024578e062e141dce20f"},
+    {file = "urllib3-1.26.16.tar.gz", hash = "sha256:8f135f6502756bde6b2a9b28989df5fbe87c9970cecaa69041edcce7f0589b14"},
 ]
 
 [package.extras]
-brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
-secure = ["certifi", "cryptography (>=1.9)", "idna (>=2.0.0)", "pyopenssl (>=17.1.0)", "urllib3-secure-extra"]
-socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
-zstd = ["zstandard (>=0.18.0)"]
+brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)", "brotlipy (>=0.6.0)"]
+secure = ["certifi", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "ipaddress", "pyOpenSSL (>=0.14)", "urllib3-secure-extra"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 
 [[package]]
 name = "uvicorn"
@@ -2347,4 +2455,4 @@ websockets = "*"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "3599f06ba0725b54ee94d0d70fce6c2fc1081bedc9b82d714112804148c9df64"
+content-hash = "42d9a0197480201dd737838d20229f6e21e912aed76db27326ad482b7ec5005e"

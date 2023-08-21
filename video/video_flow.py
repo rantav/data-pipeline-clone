@@ -3,16 +3,7 @@ from datetime import timedelta
 from prefect import flow, task, get_run_logger
 from prefect.tasks import task_input_hash
 
-
-@task(cache_key_fn=task_input_hash)
-def download_video(video_url: str) -> str:
-    logger = get_run_logger()
-    logger.info(f'Downloading video {video_url}...')
-    return "video.mp4"
-
-    # response = httpx.get(url, params=params)
-    # response.raise_for_status()
-    # return response.json()
+from video_downloader import download_video
 
 
 # @flow
@@ -56,4 +47,4 @@ def process_video(video_url: str = "youtube.com/watch/123456"):
 
 
 if __name__ == "__main__":
-    process_video()
+    process_video(video_url='https://www.youtube.com/watch?v=P4urfQ1BdGI')

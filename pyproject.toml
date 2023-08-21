@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "data-pipeline"
+version = "0.1.0"
+description = ""
+authors = ["Ran Tavory <rantav@gmail.com>"]
+readme = "README.md"
+packages = [{include = "data_pipeline"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+prefect = "^2.11.4"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

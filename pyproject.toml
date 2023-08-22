@@ -9,6 +9,9 @@ packages = [{include = "data_pipeline"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 prefect = "^2.11.4"
+yt-dlp = "^2023.7.6"
+boto3 = "^1.28.31"
+prefect-aws = "^0.3.6"
 
 
 [build-system]

@@ -21,5 +21,5 @@ poetry run prefect server start
 
 To run a flow as standalone locally: 
 ```sh
-poetry run python video_flow.py 
+poetry run python video/video_flow.py 
 ```

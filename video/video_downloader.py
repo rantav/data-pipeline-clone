@@ -9,6 +9,7 @@ import yt_dlp as youtube_dl
 class VideoDownloadResult(BaseModel):
     video_file: str
     metadata_file: str
+    ydl_format: str
     id: str
     title: str
     formats: list[dict]
@@ -62,12 +63,13 @@ def select_video_type(video_url: str) -> str:
     
 def download_youtube_video(youtube_url) -> VideoDownloadResult:
     logger = get_run_logger()
+    ydl_format = 'worstvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'
     ydl_opts = {
         # 'logger': logger, # I want to use the prefect logger but when I try to, logging isn't working :-(
         # 'outtmpl': output_filename,
         # 'writeinfojson': True, # This doesn't work so I write the file manually below
         'paths': {'home': './video_downloads'},
-        'format': 'worstvideo[ext=mp4]+bestaudio[ext=m4a]/mp4',
+        'format': ydl_format,
         'retries': 3,
         # 'merge_output_format': 'mp4',
         # 'nocheckcertificate': True,
@@ -85,13 +87,14 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
 
     with youtube_dl.YoutubeDL(ydl_opts) as ydl:
         try:
-            video_info = ydl.extract_info(youtube_url, download=False)
+            video_info = ydl.extract_info(youtube_url, download=True)
             logger.info(f"Download success for {youtube_url} (Title: {video_info['title']})")
             video_file = ydl.prepare_filename(video_info) # youtube-dl automatically adds the correct extension
             metadata_file = video_file.replace('.mp4', '.info.json')
             result = VideoDownloadResult(
                 video_file=video_file, 
                 metadata_file=metadata_file,
+                ydl_format=ydl_format,
                 id=video_info['id'], 
                 title=video_info['title'], 
                 formats=video_info['formats'], 
@@ -124,8 +127,6 @@ def download_youtube_video(youtube_url) -> VideoDownloadResult:
                 audio_channels=video_info['audio_channels'])
             # Write the result to a json file
             json.dump(result.dict(), open(metadata_file, 'w'))
-            # with open(metadata_file, 'w') as f:
-            #     json.dump(video_info, f)
 
             return result
         except youtube_dl.utils.DownloadError as e:

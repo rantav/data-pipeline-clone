@@ -6,36 +6,35 @@ from prefect_aws import AwsCredentials
 import boto3
 from botocore.exceptions import NoCredentialsError
 
-@task(cache_key_fn=task_input_hash)
+@flow
 def store_video(video_file_path: str, metadata_file_path: str, s3_bucket: str, s3_folder: str) -> str:
     logger = get_run_logger()
-    logger.info(f'Storing video {video_file_path}...')
+    logger.info(f'Storing video (and metadata) {video_file_path}...')
     
-    # Store the video in S3
-    aws_credentials_block = AwsCredentials.load("aws-credentials")
+    video_s3_path = upload_file.submit(video_file_path, s3_bucket, s3_folder)
+    metadata_s3_path = upload_file.submit(metadata_file_path, s3_bucket, s3_folder)
+    metadata_s3_path.result()
+    return video_s3_path.result()
 
-    s3 = boto3.client('s3', aws_access_key_id=aws_credentials_block.aws_access_key_id,
-                            aws_secret_access_key=aws_credentials_block.aws_secret_access_key.get_secret_value())
+@task(cache_key_fn=task_input_hash)
+def upload_file(file_path: str, s3_bucket: str, s3_folder: str) -> str:
+    logger = get_run_logger()
+    creds = AwsCredentials.load("aws-credentials")
+
+    s3 = boto3.client('s3', aws_access_key_id=creds.aws_access_key_id,
+                            aws_secret_access_key=creds.aws_secret_access_key.get_secret_value())
     
-    metadata_s3_path =  os.path.join(s3_folder, metadata_file_path.split('/')[-1])
-    video_s3_path =  os.path.join(s3_folder, video_file_path.split('/')[-1])
+    s3_path =  os.path.join(s3_folder, file_path.split('/')[-1])
     try:
-        s3.upload_file(metadata_file_path, s3_bucket, metadata_s3_path)
-        # s3.upload_file(video_file_path, s3_bucket, video_s3_path)
-        logger.info("Upload Successful")
+        s3.upload_file(file_path, s3_bucket, s3_path)
+        logger.info(f'Upload Successful to {s3_path}')
     except FileNotFoundError as e:
-        logger.error("The file was not found")
+        # We keep these here just so to remember what could happen
         raise e
     except NoCredentialsError as e:
-        logger.error("Credentials not available")
         raise e
 
-    
-    return video_s3_path
-
-@flow
-def store_video_flow(video_file_path: str, metadata_file_path: str, s3_bucket: str, s3_folder: str) -> str:
-    return store_video(video_file_path, metadata_file_path, s3_bucket, s3_folder)
+    return s3_path
 
 if __name__ == '__main__':
     metadata_file_path = 'video_downloads/חי פה - חדשות חיפה： הפגנה ספונטנית בחורב בעקבות התפטרותו של ניצב עמי אשד (צילום： מטה מחאת העם) [P4urfQ1BdGI].info.json'
@@ -43,5 +42,5 @@ if __name__ == '__main__':
     s3_bucket = 'data-pipeline-video-downloads'
     s3_folder = 'local-test/video_downloads'
 
-    result = store_video_flow(video_file_path, metadata_file_path, s3_bucket, s3_folder)
+    result = store_video(video_file_path, metadata_file_path, s3_bucket, s3_folder)
     # print(result)

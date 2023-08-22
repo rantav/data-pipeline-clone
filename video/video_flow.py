@@ -1,17 +1,10 @@
 from datetime import timedelta
-from prefect import flow, task, get_run_logger
+from prefect import flow, task, get_run_logger, variables
 from prefect.tasks import task_input_hash
-from prefect import variables
 
 from video_downloader import download_video
 from video_storage import store_video
-
-    
-@task(cache_key_fn=task_input_hash)
-def transcribe_video(video_file_path: str) -> str:
-    logger = get_run_logger()
-    logger.info(f'Transcribing video {video_file_path}...')
-    return "transcription"
+from video_transcriber import transcribe_video
 
 @task(cache_key_fn=task_input_hash)
 def index_video_transcription(video_url: str = None, s3_video_file_path: str = None, transcription: str = None):

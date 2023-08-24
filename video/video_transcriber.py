@@ -1,23 +1,39 @@
+from urllib.parse import urlparse
+
 from prefect import flow, task, get_run_logger, variables
 from prefect.tasks import task_input_hash
 from google.cloud.speech_v2 import SpeechClient
-from google.cloud.speech_v2.types import cloud_speech
+from google.cloud.speech_v2.types import cloud_speech, RecognitionFeatures, SpeakerDiarizationConfig
 from google.api_core.client_options import ClientOptions
-from urllib.parse import urlparse
+
+from pydantic import BaseModel, ConfigDict
+
+from prefect_gcp import GcpCredentials
 
 from video_storage import s3_download_file, gcs_upload_file
 
+class TranscriptionResult:
+    def __init__(self, gcs_video_file, text, language_code, raw_transcription):
+        self.gcs_video_file = gcs_video_file
+        self.text = text
+        self.language_code = language_code
+        self.raw_transcription = raw_transcription
+        
+    gcs_video_file: str
+    text: str
+    language_code: str
+    raw_transcription: cloud_speech.BatchRecognizeFileResult
     
 @flow
-def transcribe_video(video_file_path: str) -> str:
+def transcribe_video(video_file_path: str) -> TranscriptionResult:
     logger = get_run_logger()
     logger.info(f'Transcribing video {video_file_path}...')
     local_file = get_local_file(video_file_path)
     gcs_bucket = variables.get('gcs_bucket')
     gcs_folder = variables.get('gcs_folder')
     gcs_file = gcs_upload_file(local_file_path=local_file, gcs_bucket=gcs_bucket, gcs_folder=gcs_folder)
-    # transcription = transcribe_batch_dynamic_batching_v2('speech-to-text-395212', gcs_file)
-    return "transcription"
+    transcription_result = transcribe_chirp(gcs_uri=gcs_file)
+    return transcription_result
 
 @task
 def get_local_file(video_file_path: str) -> str:
@@ -33,38 +49,43 @@ def get_local_file(video_file_path: str) -> str:
         local_file = video_file_path
     return local_file
 
-
-def transcribe_batch_dynamic_batching_v2(
-    project_id: str,
+@task(cache_key_fn=task_input_hash)
+def transcribe_chirp(
     gcs_uri: str,
-) -> cloud_speech.BatchRecognizeResults:
+    region: str = 'europe-west4',
+    api_endpoint: str = 'europe-west4-speech.googleapis.com'
+) -> TranscriptionResult:
     """Transcribes audio from a Google Cloud Storage URI.
-
-    Args:
-        project_id: The Google Cloud project ID.
-        gcs_uri: The Google Cloud Storage URI.
-
-    Returns:
-        The RecognizeResponse.
     """
-    # Instantiates a client
-    client = SpeechClient(
-            client_options=ClientOptions(
-            api_endpoint="europe-west4-speech.googleapis.com",
-        )
-    )
+    logger = get_run_logger()
 
+    creds = GcpCredentials.load("gcp-credentials")
+    credentials_dict = creds.service_account_info.get_secret_value()
+    project_id = creds.project
+
+    # Instantiates a client
+    client = SpeechClient.from_service_account_info(
+        credentials_dict,
+        client_options=ClientOptions(api_endpoint=api_endpoint)
+    )
+    language_code = 'iw-IL'
     config = cloud_speech.RecognitionConfig(
         auto_decoding_config=cloud_speech.AutoDetectDecodingConfig(),
-        language_codes=["iw-IL"],
+        language_codes=[language_code],
         model="chirp",
+        features=RecognitionFeatures(
+            # Add timestamp per word. Not sure if it's really needed
+            # enable_word_time_offsets=True,
+
+            # Speaker diarization (who said what)
+            # diarization_config=SpeakerDiarizationConfig(min_speaker_count=1, max_speaker_count=6), Not supported by chirp?
+        )
     )
 
     file_metadata = cloud_speech.BatchRecognizeFileMetadata(uri=gcs_uri)
 
     request = cloud_speech.BatchRecognizeRequest(
-        # recognizer=f"projects/{project_id}/locations/global/recognizers/_",
-        recognizer=f"projects/{project_id}/locations/europe-west4/recognizers/_",
+        recognizer=f"projects/{project_id}/locations/{region}/recognizers/_",
         config=config,
         files=[file_metadata],
         recognition_output_config=cloud_speech.RecognitionOutputConfig(
@@ -76,22 +97,18 @@ def transcribe_batch_dynamic_batching_v2(
     # Transcribes the audio into text
     operation = client.batch_recognize(request=request)
 
-    print("Waiting for operation to complete...")
+    logger.info(f'Waiting for transcription operation to complete for {gcs_uri}...')
     response = operation.result(timeout=120)
 
-    for result in response.results[gcs_uri].transcript.results:
-        print(f"Transcript: {result.alternatives[0].transcript}")
+    joined_transcript = '. '.join([r.alternatives[0].transcript for r in response.results[gcs_uri].transcript.results])
+    logger.info(f'Finished transcription for {gcs_uri}, result: {len(joined_transcript)} chars.')
 
-    return response.results[gcs_uri].transcript
-
-# import time
-# start = time.time()
-
-# transcription = transcribe_batch_dynamic_batching_v2('speech-to-text-395212', 'gs://eu-west4-rantav-speech-to-text/audio-files/audio_compressed_UCKEImtWikw9usC1pl_9m1nQ_20230705_Hoy7fV6IQ8Y.mp3')
-# end = time.time()
-# print(transcription)
-
-# print(f'Execution time: {end - start}')
+    ret = TranscriptionResult(
+        gcs_video_file=gcs_uri,
+        text=joined_transcript,
+        language_code=language_code,
+        raw_transcription=response.results[gcs_uri])
+    return ret
 
 if __name__ == '__main__':
     transcribe_video(video_file_path='/Users/rantav/Downloads/tmp-whisper/audio_UCKEImtWikw9usC1pl_9m1nQ_20230705_Hoy7fV6IQ8Y.mp3')

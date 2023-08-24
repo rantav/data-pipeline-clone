@@ -50,7 +50,8 @@ def gcs_upload_file(local_file_path: str, gcs_bucket: str, gcs_folder: str) -> s
 
     # Upload the file
     blob.upload_from_filename(local_file_path)
-    return gcs_destination
+    ret_path = f'gs://{gcs_bucket}/{gcs_destination}'
+    return ret_path
 
 def s3_download_file(s3_bucket: str, s3_file_path: str, local_directory: str) -> str:
     logger = get_run_logger()

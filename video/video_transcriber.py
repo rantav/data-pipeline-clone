@@ -6,8 +6,6 @@ from google.cloud.speech_v2 import SpeechClient
 from google.cloud.speech_v2.types import cloud_speech, RecognitionFeatures, SpeakerDiarizationConfig
 from google.api_core.client_options import ClientOptions
 
-from pydantic import BaseModel, ConfigDict
-
 from prefect_gcp import GcpCredentials
 
 from video_storage import s3_download_file, gcs_upload_file

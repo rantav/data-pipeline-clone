@@ -61,19 +61,24 @@ def s3_download_file(s3_bucket: str, s3_file_path: str, local_directory: str) ->
                             aws_secret_access_key=creds.aws_secret_access_key.get_secret_value())
     
     local_file_path = os.path.join(local_directory, s3_file_path.split('/')[-1])
+    logger.info(f'Starting download of {s3_file_path} to {local_file_path} ...')
     s3.download_file(s3_bucket, s3_file_path, local_file_path)
-    logger.info(f'Download Successful to {local_file_path}')
+    logger.info(f'Finished download of {s3_file_path} to {local_file_path}')
 
     return local_file_path
 
 if __name__ == '__main__':
-    metadata_file_path = 'video_downloads/חי פה - חדשות חיפה： הפגנה ספונטנית בחורב בעקבות התפטרותו של ניצב עמי אשד (צילום： מטה מחאת העם) [P4urfQ1BdGI].info.json'
+    # metadata_file_path = 'video_downloads/חי פה - חדשות חיפה： הפגנה ספונטנית בחורב בעקבות התפטרותו של ניצב עמי אשד (צילום： מטה מחאת העם) [P4urfQ1BdGI].info.json'
     # video_file_path = 'video_downloads/חי פה - חדשות חיפה： הפגנה ספונטנית בחורב בעקבות התפטרותו של ניצב עמי אשד (צילום： מטה מחאת העם) [P4urfQ1BdGI].mp4'
-    video_file_path = '/Users/rantav/Downloads/tmp-whisper/audio_UCKEImtWikw9usC1pl_9m1nQ_20230705_Hoy7fV6IQ8Y.mp3'
-    s3_bucket = variables.get('s3_bucket', 'data-pipeline-video-downloads')
-    s3_folder = variables.get('s3_folder', 'local-test/video_downloads')
+    # video_file_path = '/Users/rantav/Downloads/tmp-whisper/audio_UCKEImtWikw9usC1pl_9m1nQ_20230705_Hoy7fV6IQ8Y.mp3'
 
+    # s3_bucket = variables.get('s3_bucket', 'data-pipeline-video-downloads')
+    # s3_folder = variables.get('s3_folder', 'local-test/video_downloads')
+    # result = store_video(video_file_path, metadata_file_path, s3_bucket, s3_folder)
+    # print(result)
 
-    result = store_video(video_file_path, metadata_file_path, s3_bucket, s3_folder)
-
-    print(result)
+    @flow
+    def download():
+        s3_download_file('ch14-daily-recordings', 'FULL-2023-04-21--00-29-38--to--2023-04-21--18-30-02.mkv', '/Users/rantav/Downloads/')
+        s3_download_file('knesset-videos', 'hdolat-israel_27-3-2023.mp4', '/Users/rantav/Downloads/')
+    download()    

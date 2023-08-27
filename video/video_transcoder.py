@@ -64,7 +64,6 @@ def transcode_ffmpeg(local_file_path: str, format: str, max_duration_sec: int = 
     try:
         completed_process = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if completed_process.returncode != 0:
-            err = f'FFmpeg command failed with the following error: {completed_process.stderr}'
             raise subprocess.CalledProcessError(completed_process.returncode, cmd, output=completed_process.stdout, stderr=completed_process.stderr)
     except subprocess.CalledProcessError as e:
         logger.error(f'FFmpeg command failed with the following error: {e.stderr}')
@@ -72,7 +71,7 @@ def transcode_ffmpeg(local_file_path: str, format: str, max_duration_sec: int = 
 
     # Collect output files
     output_files = []
-    for filename in os.listdir(output_dir):
+    for filename in sorted(os.listdir(output_dir)):
         if filename.startswith(f'{file_name_without_extension}_segment') and filename.endswith(f'.{format}'):
             output_files.append(os.path.join(output_dir, filename))
 

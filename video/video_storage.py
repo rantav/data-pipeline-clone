@@ -1,4 +1,5 @@
 import os
+from urllib.parse import urlparse
 
 from prefect import flow, task, get_run_logger, variables
 from prefect.tasks import task_input_hash
@@ -52,6 +53,29 @@ def gcs_upload_file(local_file_path: str, gcs_bucket: str, gcs_folder: str) -> s
     blob.upload_from_filename(local_file_path)
     ret_path = f'gs://{gcs_bucket}/{gcs_destination}'
     return ret_path
+
+def gcs_download_file(gcs_uri: str, local_directory: str) -> str:
+    logger = get_run_logger()
+    creds = GcpCredentials.load("gcp-credentials")
+    credentials_dict = creds.service_account_info.get_secret_value()
+    storage_client = storage.Client.from_service_account_info(credentials_dict)
+
+    urlparse_result = urlparse(gcs_uri)
+    gcs_bucket = urlparse_result.netloc
+    gcs_file_path = urlparse_result.path[1:]
+
+    # Get the bucket
+    bucket = storage_client.bucket(gcs_bucket)
+
+    # Specify the source file and destination blob name
+    blob = bucket.blob(gcs_file_path)
+
+    # Download the file
+    local_file_path = os.path.join(local_directory, gcs_file_path.split('/')[-1])
+    blob.download_to_filename(local_file_path)
+    logger.debug(f'Finished download of {gcs_uri} to {local_file_path}')
+
+    return local_file_path
 
 def s3_download_file(s3_bucket: str, s3_file_path: str, local_directory: str) -> str:
     logger = get_run_logger()

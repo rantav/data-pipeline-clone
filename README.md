@@ -1,6 +1,7 @@
 # data-pipeline
 
 ## Install: 
+1. Install **ffmpeg**
 1. Install python **poetry**
 1. Then run:
 
@@ -16,7 +17,7 @@ poetry run prefect version
 
 To run a local dev prefect server: 
 ```sh
-poetry run prefect server start
+make run-server
 ```
 
 To run a flow as standalone locally: 

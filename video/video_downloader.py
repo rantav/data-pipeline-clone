@@ -1,7 +1,7 @@
 import json
 from typing import Optional
 from pydantic import BaseModel
-from prefect import flow, task, get_run_logger
+from prefect import flow, task, get_run_logger, variables
 from prefect.tasks import task_input_hash
 
 import yt_dlp as youtube_dl
@@ -64,6 +64,7 @@ def select_video_type(video_url: str) -> str:
 def download_youtube_video(youtube_url) -> VideoDownloadResult:
     logger = get_run_logger()
     ydl_format = 'worstvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'
+    local_working_dir = variables.get('local_working_dir')
     ydl_opts = {
         # 'logger': logger, # I want to use the prefect logger but when I try to, logging isn't working :-(
         # 'outtmpl': output_filename,
